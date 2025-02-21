@@ -1,130 +1,197 @@
 'use client'
 import React, { useState, useRef } from 'react'
 
-const HomePage = () => {
- const [inputText, setInputText] = useState('');
- const [isActive, setIsActive] = useState(false);
- const recognitionRef = useRef<any>(null);
- const language = 'en-US'
-
- async function handleOnRecord() {
-   try {
-     // First check if we're stopping an existing recording
-     if (isActive && recognitionRef.current) {
-       recognitionRef.current.stop();
-       setIsActive(false);
-       return;
-     }
-
-     // Request microphone permission
-     await navigator.mediaDevices.getUserMedia({ audio: true });
-     
-     const SpeechRecognition = window.webkitSpeechRecognition;
-     if (!SpeechRecognition) {
-       alert('Speech recognition is not supported in this browser. Please try Chrome.');
-       return;
-     }
-
-     // Create new recognition instance
-     const recognition = new SpeechRecognition();
-     recognitionRef.current = recognition;
-     
-     // Configure recognition
-     recognition.lang = language;
-     recognition.continuous = false;
-     recognition.maxAlternatives = 1;
-     recognition.interimResults = true;
-
-     recognition.onstart = () => {
-       setIsActive(true);
-     };
-
-     recognition.onresult = (event) => {
-       const lastResult = event.results[event.results.length - 1];
-       const transcript = lastResult[0].transcript;
-       setInputText(transcript);
-       
-       // If this is a final result, stop recording
-       if (lastResult.isFinal) {
-         recognition.stop();
-       }
-     };
-
-     recognition.onerror = (event) => {
-       console.error('Error:', event.error);
-       setIsActive(false);
-     };
-
-     recognition.onend = () => {
-       setIsActive(false);
-     };
-
-     // Start recording
-     recognition.start();
-
-   } catch (error) {
-     console.error('Error:', error);
-     setIsActive(false);
-     alert('Please allow microphone access to use speech recognition.');
-   }
- }
-
- // Function to handle input changes
- const handleInputChange = (e: { target: { value: React.SetStateAction<string>; }; }) => {
-   setInputText(e.target.value);
- };
-
- // Function to handle send button click
- const handleSendClick = () => {
-   setInputText(''); // Clears the input field
- };
-
- return (
-   <div>
-     <div className="flex justify-between items-center w-full px-4">
-       <h1 className="text-slate-950 md:text-3xl sm:text-xl flex justify-center">
-         Hands-Free AI
-       </h1>
-       <nav className="flex justify-end">
-         <h1 className="rounded-full bg-black text-white w-10 h-10 flex items-center justify-center">
-           T
-         </h1>
-       </nav>
-     </div>
-
-     <nav className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-full flex justify-center items-center">
-       <div className="relative w-[90%] md:w-[50%] max-w-[600px]">
-         {/* Input Field */}
-         <input
-           className="h-10 w-full rounded-full text-black bg-gray-200 p-2 pl-12 pr-12 shadow-lg outline-none focus:ring-2 focus:ring-blue-500"
-           placeholder="Type something here..."
-           value={inputText}
-           onChange={handleInputChange}
-         />
-         
-         {/* Record Button */}
-         <button
-           onClick={handleOnRecord}
-           className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-8 w-8 rounded-full ${
-             isActive ? 'bg-red-600 animate-pulse' : 'bg-red-500'
-           } text-white flex items-center justify-center shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400`}
-           aria-label={isActive ? 'Stop Recording' : 'Start Recording'}
-         >
-           🎙️
-         </button>
-
-         {/* Send Button */}
-         <button
-           className="absolute right-3 top-1/2 transform -translate-y-1/2 h-8 w-8 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
-           aria-label="Send"
-           onClick={handleSendClick}
-         >
-           ➤
-         </button>
-       </div>
-     </nav>
-   </div>
- )
+// Define necessary types for Speech Recognition
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+  resultIndex: number;
 }
 
-export default HomePage
+interface SpeechRecognitionResult {
+  isFinal: boolean;
+  [index: number]: SpeechRecognitionAlternative;
+}
+
+interface SpeechRecognitionAlternative {
+  transcript: string;
+  confidence: number;
+}
+
+interface SpeechRecognitionResultList {
+  length: number;
+  item(index: number): SpeechRecognitionResult;
+  [index: number]: SpeechRecognitionResult;
+}
+
+interface SpeechRecognitionError extends Event {
+  error: string;
+  message: string;
+}
+
+// Extend Window interface to include webkitSpeechRecognition
+declare global {
+  interface Window {
+    webkitSpeechRecognition: new () => SpeechRecognition;
+    SpeechRecognition: new () => SpeechRecognition;
+  }
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  maxAlternatives: number;
+  onstart: ((this: SpeechRecognition, ev: Event) => any) | null;
+  onresult: ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => any) | null;
+  onerror: ((this: SpeechRecognition, ev: SpeechRecognitionError) => any) | null;
+  onend: ((this: SpeechRecognition, ev: Event) => any) | null;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+}
+
+const HomePage = () => {
+  const [inputText, setInputText] = useState('');
+  const [isActive, setIsActive] = useState(false);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const language = 'en-US';
+
+  async function handleOnRecord() {
+    try {
+      // First check if we're stopping an existing recording
+      if (isActive && recognitionRef.current) {
+        recognitionRef.current.stop();
+        setIsActive(false);
+        return;
+      }
+
+      // Request microphone permission
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+      
+      // Check for browser support and get the correct Speech Recognition API
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert('Speech recognition is not supported in this browser. Please try Chrome.');
+        return;
+      }
+
+      // Create new recognition instance
+      const recognition = new SpeechRecognition();
+      recognitionRef.current = recognition;
+      
+      // Configure recognition
+      recognition.lang = language;
+      recognition.continuous = false;
+      recognition.maxAlternatives = 1;
+      recognition.interimResults = true;
+
+      recognition.onstart = () => {
+        setIsActive(true);
+        setInputText(''); // Clear input when starting new recording
+      };
+
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
+        const lastResult = event.results[event.results.length - 1];
+        const transcript = lastResult[0].transcript;
+        setInputText(transcript);
+        
+        // If this is a final result, stop recording
+        if (lastResult.isFinal) {
+          recognition.stop();
+        }
+      };
+
+      recognition.onerror = (event: SpeechRecognitionError) => {
+        console.error('Error:', event.error);
+        setIsActive(false);
+        alert(`Speech recognition error: ${event.error}`);
+      };
+
+      recognition.onend = () => {
+        setIsActive(false);
+      };
+
+      // Start recording
+      recognition.start();
+
+    } catch (error) {
+      console.error('Error:', error);
+      setIsActive(false);
+      alert('Please allow microphone access to use speech recognition.');
+    }
+  }
+
+  // Function to handle input changes with proper type
+  const handleInputChange = () => {
+    setInputText(e.target.value);
+  };
+
+  // Function to handle send button click
+  const handleSendClick = () => {
+    if (inputText.trim()) {
+      console.log('Sending text:', inputText);
+      // Add your send logic here
+    }
+    setInputText(''); // Clears the input field
+  };
+
+  // Handle enter key press
+  const handleKeyPress = () => {
+    if (e.key === 'Enter' && inputText.trim()) {
+      handleSendClick();
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex justify-between items-center w-full px-4 py-4">
+        <h1 className="text-slate-950 md:text-3xl sm:text-xl flex justify-center">
+          Hands-Free AI
+        </h1>
+        <nav className="flex justify-end">
+          <h1 className="rounded-full bg-black text-white w-10 h-10 flex items-center justify-center">
+            T
+          </h1>
+        </nav>
+      </div>
+
+      <nav className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-full flex justify-center items-center">
+        <div className="relative w-[90%] md:w-[50%] max-w-[600px]">
+          {/* Input Field */}
+          <input
+            className="h-10 w-full rounded-full text-black bg-gray-200 p-2 pl-12 pr-12 shadow-lg outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Type something here..."
+            value={inputText}
+            onChange={handleInputChange}
+            onKeyPress={handleKeyPress}
+          />
+          
+          {/* Record Button */}
+          <button
+            onClick={handleOnRecord}
+            className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-8 w-8 rounded-full ${
+              isActive ? 'bg-red-600 animate-pulse' : 'bg-red-500'
+            } text-white flex items-center justify-center shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400`}
+            aria-label={isActive ? 'Stop Recording' : 'Start Recording'}
+          >
+            🎙️
+          </button>
+
+          {/* Send Button */}
+          <button
+            className={`absolute right-3 top-1/2 transform -translate-y-1/2 h-8 w-8 rounded-full ${
+              inputText.trim() ? 'bg-blue-500 hover:bg-blue-600' : 'bg-gray-400 cursor-not-allowed'
+            } text-white flex items-center justify-center shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400`}
+            aria-label="Send"
+            onClick={handleSendClick}
+            disabled={!inputText.trim()}
+          >
+            ➤
+          </button>
+        </div>
+      </nav>
+    </div>
+  );
+};
+
+export default HomePage;
