@@ -49,12 +49,9 @@ const Hero = () => {
     <section className="section-headstream w-full nav-height bg-transparent relative pt-16 pb-16">
       {/* Background Video */}
       <div className="absolute inset-0 overflow-hidden">
-        <video
+        <img
           className="pointer-events-none w-full h-full object-cover"
-          src={videoSrc}
-          autoPlay
-          loop
-          muted
+         src='/public/assets/images/joina.png'
         />
       </div>
 
