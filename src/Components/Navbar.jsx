@@ -1,4 +1,3 @@
-import React from 'react';
 import { appleImg } from "../utils";
 import { Button } from "flowbite-react";
 
@@ -12,7 +11,7 @@ function Navbar() {
 
         {/* Navigation links */}
         <div className="hidden sm:flex flex-1 justify-center space-x-6">
-          {['Send & Receive', 'Pay with Joinai', 'Help & Support', 'About Us'].map((nav, i) => (
+          {['Send & Receive', 'Pay with Joinai', 'Help & Support', 'About Us'].map((nav) => (
             <div key={nav} className="text-sm cursor-pointer text-black hover:text-[#f68a4e] transition-all">
               {nav}
             </div>
