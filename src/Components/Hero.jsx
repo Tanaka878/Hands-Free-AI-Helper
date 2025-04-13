@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import gsap from 'gsap';
-import phone from '../Assets/Images/joinaiphone.png';
+import '../Assets/Images/joinaiphone.png';
 import { heroVideo, smallHeroVideo } from '../utils';
 import { useGSAP } from '@gsap/react';
 import { FaMessage } from 'react-icons/fa6';
@@ -44,7 +44,7 @@ const Hero = () => {
   }, []);
 
   const textRef = useRef(null);
-  const imageRef = useRef(null);
+  
 
   useGSAP(() => {
     gsap.fromTo(
@@ -83,7 +83,7 @@ const Hero = () => {
     }
 
     try {
-      const response = await fetch('https://joinai-support-system-production.up.railway.app/ticket/launchTicket', {
+      const response = await fetch('https://joinai-support-system-productTechnicalion.up.railway.app/ticket/launchTicket', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(ticketDetails),
