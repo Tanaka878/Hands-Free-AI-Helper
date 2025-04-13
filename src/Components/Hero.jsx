@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import phone from '../Assets/Images/joinaiphone.png';
 import { heroVideo, smallHeroVideo } from '../utils'; 
 import { useGSAP } from '@gsap/react';
+import { FaMessage } from 'react-icons/fa6';
 
 const Hero = () => {
   const [videoSrc, setVideoSrc] = useState(
@@ -106,6 +107,11 @@ const Hero = () => {
         <div className="hero-image hidden sm:block" ref={imageRef}>
           <img src={phone} alt="iPhone" width={2000} height={2000} style={{ transition: 'none' }} />
         </div>
+      </div>
+      
+      {/**A chat icon for support */}
+      <div>
+        <FaMessage className='text-3xl bg-slate-50'/>
       </div>
     </section>
   );

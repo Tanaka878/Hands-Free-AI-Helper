@@ -1,6 +1,7 @@
 import { appleImg } from "../utils";
 import { Button } from "flowbite-react";
 
+
 function Navbar() {
   return (
     <header className="font w-full py-5 sm:px-10 px-5 flex justify-between items-center">
@@ -23,11 +24,13 @@ function Navbar() {
           <Button color="dark" pill>
             Sign Up
           </Button>
-          <Button className='get' pill outline gradientDuoTone="redToYellow">
+          <Button className='flex get rounded-full ' pill outline gradientDuoTone="redToYellow">
             Login
           </Button>
         </div>
       </nav>
+
+
     </header>
   );
 }
