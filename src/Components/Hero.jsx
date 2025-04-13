@@ -9,7 +9,7 @@ const Hero = () => {
   const [videoSrc, setVideoSrc] = useState(
     window.innerWidth < 768 ? smallHeroVideo : heroVideo
   );
-  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);// Display the response from the backend
   const [isTicketOpen, setIsTicketOpen] = useState(false);
   const [messages, setMessages] = useState([
     { type: 'bot', text: 'Hello! How can I assist you today?' },
@@ -93,8 +93,8 @@ const Hero = () => {
         throw new Error('Failed to submit ticket');
       }
 
-      const result = await response.text();
-      alert(result); // Display the response from the backend
+    //  const result = await response.text();
+      alert("Ticket has been submitted sucessfully"); 
       setMessages((prev) => [
         ...prev,
         { type: 'bot', text: 'Your ticket has been submitted!' },
