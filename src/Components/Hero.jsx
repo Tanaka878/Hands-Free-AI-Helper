@@ -9,7 +9,7 @@ const Hero = () => {
   const [videoSrc, setVideoSrc] = useState(
     window.innerWidth < 768 ? smallHeroVideo : heroVideo
   );
-  const [isChatOpen, setIsChatOpen] = useState(false);// Display the response from the backend
+  const [isChatOpen, setIsChatOpen] = useState(false); // Display the response from the backend
   const [isTicketOpen, setIsTicketOpen] = useState(false);
   const [messages, setMessages] = useState([
     { type: 'bot', text: 'Hello! How can I assist you today?' },
@@ -44,7 +44,6 @@ const Hero = () => {
   }, []);
 
   const textRef = useRef(null);
-  
 
   useGSAP(() => {
     gsap.fromTo(
@@ -74,7 +73,6 @@ const Hero = () => {
     if (
       !ticketDetails.email ||
       !ticketDetails.phoneNumber ||
-      !ticketDetails.subject ||
       !ticketDetails.content ||
       !ticketDetails.category
     ) {
@@ -82,19 +80,27 @@ const Hero = () => {
       return;
     }
 
+    // Ensure the subject only contains the email
+    const updatedTicketDetails = {
+      ...ticketDetails,
+      subject: ticketDetails.email,
+    };
+
     try {
-      const response = await fetch('https://joinai-support-system-production.up.railway.app/ticket/launchTicket', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(ticketDetails),
-      });
+      const response = await fetch(
+        'https://joinai-support-system-production.up.railway.app/ticket/launchTicket',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedTicketDetails),
+        }
+      );
 
       if (!response.ok) {
         throw new Error('Failed to submit ticket');
       }
 
-    //  const result = await response.text();
-      alert("Ticket has been submitted sucessfully"); 
+      alert('Ticket has been submitted successfully');
       setMessages((prev) => [
         ...prev,
         { type: 'bot', text: 'Your ticket has been submitted!' },
