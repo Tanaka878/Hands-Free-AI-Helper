@@ -83,7 +83,7 @@ const Hero = () => {
     }
 
     try {
-      const response = await fetch('https://joinai-support-system-productTechnicalion.up.railway.app/ticket/launchTicket', {
+      const response = await fetch('https://joinai-support-system-production.up.railway.app/ticket/launchTicket', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(ticketDetails),
